@@ -3,10 +3,17 @@ Neural Network binary classifier implementation for discriminating P300 event-re
 
 ## Get Started
 First clone this repository:
+
 `git clone https://github.com/cskroonenberg/P3-Classifier`
-Navigate to the project directory
+
+Navigate to the project directory:
+
 `cd P3-Classifier`
+
 Install dependencies:
+
 `pip install -r requirements.txt`
+
 Execution:
+
 `python nn_classifier.py`
