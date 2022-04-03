@@ -24,6 +24,6 @@ def trials(trials, learning_list, layer_list):
 
 def main():
     #Trial with default values
-    trials(1, [learning_rate], [hidden1, hidden2, hidden3, output])
+    trials(1, [learning_rate], [[hidden1, hidden2, hidden3, output]])
 
 main()

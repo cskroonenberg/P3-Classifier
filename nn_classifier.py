@@ -66,11 +66,11 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   model.add_module('Hidden Activation2', nn.ReLU())
 
   # Hidden Layer (Size 100 -> 10)
-  model.add_module('Hidden Linear3', nn.Linear(hidden3, 10))
+  model.add_module('Hidden Linear3', nn.Linear(hidden3, output))
   model.add_module('Hidden Activation3', nn.ReLU())
 
   # Output Layer (Size 10 -> 1)
-  model.add_module('Output Linear', nn.Linear(10, number_of_classes))
+  model.add_module('Output Linear', nn.Linear(output, number_of_classes))
   model.add_module('Output Activation', nn.Sigmoid())
 
   # Loss Function
@@ -243,5 +243,5 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
       print("P300 Positive Classification {1}: {0:.2f}%".format(value[0] * 100, index + 1))
 
   #Keeps images on screen
-  while(input("Would you like to finish (Y to exit): ") != "Y"):
-      continue
+  #while(input("Would you like to finish (Y to exit): ") != "Y"):
+      #continue
