@@ -3,3 +3,4 @@ mne==0.24.1
 numpy==1.19.2
 scikit_learn==1.0.2
 torch==1.10.2
+pooch
