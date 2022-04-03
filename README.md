@@ -16,4 +16,4 @@ Install dependencies:
 
 Execution:
 
-`python nn_classifier.py`
+`python nn_testing.py`

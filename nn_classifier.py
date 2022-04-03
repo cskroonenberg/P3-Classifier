@@ -16,7 +16,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   :param hidden1: Size of 1st hidden layer as an int
   :param hidden2: Size of 2nd hidden layer as an int
   :param hidden3: Size of 3rd hidden layer as an int
-  :return: Nothing returned, but matplot lib plots testing results.
+  :return: Averages of testing scores, but matplot lib plots testing results.
   """
   # Set randomizer seed for consistency
   torch.manual_seed(100)
@@ -45,10 +45,10 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   test_negatives_high = torch.rand(5, eeg_sample_length) * 0.25 + 0.75 # Test 5 bad high samples
   test_negatives = torch.cat([test_negatives_low, test_negatives_high], dim = 0)
 
-  print("We have created a sample dataset with " + str(samples[0].shape[0]) + " samples")
-  print("Half of those are positive samples with a score of 100%")
-  print("Half of those are negative samples with a score of 0%")
-  print("We have also created two sets of 10 test samples to check the validity of the network")
+  #print("We have created a sample dataset with " + str(samples[0].shape[0]) + " samples")
+  #print("Half of those are positive samples with a score of 100%")
+  #print("Half of those are negative samples with a score of 0%")
+  #print("We have also created two sets of 10 test samples to check the validity of the network")
 
   ## Network
   model = nn.Sequential()
@@ -97,10 +97,11 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
           optimizer.step()
 
       # Plot loss graph at end of training
-      # rcParams['figure.figsize'] = 10, 5
-      # plt.title("Loss Vs Iterations")
-      # plt.plot(list(range(0, len(loss_data))), loss_data)
-      # plt.show()
+      #rcParams['figure.figsize'] = 10, 5
+      #plt.title("Loss Vs Iterations")
+      #plt.plot(list(range(0, len(loss_data))), loss_data)
+      #plt.show()
+      return loss_data
 
   # Save networks default state to retrain from default weights
   torch.save(model, "model_default_state")
@@ -113,25 +114,33 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
 
   # Train the network using our training procedure with the sample data
-  train_network(samples[0], samples[1], n = 100)
+  loss_data = train_network(samples[0], samples[1], n = 100)
 
   # Classify our positive test dataset
   predicted_positives = model(test_positives).data.tolist()
-
+  
+  positive_total, negative_total = 0, 0
   # Print the results
   for index, value in enumerate(predicted_positives):
-      print("Positive Test {1} Value scored: {0:.2f}%".format(value[0] * 100, index + 1))
-
-  print()
+      percent = value[0] * 100
+      print("Positive Test {1} Value scored: {0:.2f}%".format(percent, index + 1))
+      positive_total += percent
+  positive_mean = positive_total / len(predicted_positives)
+  print(f"Mean: {positive_mean}\n")
 
   #Classify the negative test dataset
   predicted_negatives = model(test_negatives).data.tolist()
 
   # Print the results
   for index, value in enumerate(predicted_negatives):
-      print("Negative Test {1} Value scored: {0:.2f}%".format(value[0] * 100, index + 1))
-
-  rcParams['figure.figsize'] = 10, 5
+      percent = value[0] * 100
+      print("Negative Test {1} Value scored: {0:.2f}%".format(percent, index + 1))
+      negative_total += percent
+  negative_mean = negative_total / len(predicted_negatives)
+  print(f"Mean: {negative_mean}\n")
+  
+  #rcParams['figure.figsize'] = 10, 5
+  """
   plt.scatter(list(range(0, eeg_sample_length)), test_positives[3], color = "#00aa00")
   plt.plot(list(range(0, eeg_sample_length)), test_positives[3], color = "#bbbbbb")
   plt.scatter(list(range(0, eeg_sample_length)), test_negatives[0], color = "#aa0000")
@@ -140,6 +149,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   plt.plot(list(range(0, eeg_sample_length)), test_negatives[9], color = "#bbbbbb")
   plt.ylim([0 , 1])
   # plt.show()
+  """
 
   ## Retrieve Data from MNE EEG Dataset
   data_path = mne.datasets.sample.data_path()
@@ -172,7 +182,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   channel = "EEG 058"
 
   # Display a graph of the sensor position we're using
-  sensor_position_figure = epochs.plot_sensors(show_names=[channel])
+  #sensor_position_figure = epochs.plot_sensors(show_names=[channel])
 
   event_id=[1,2,3,4]
   epochsNoP300 = mne.Epochs(raw_data, events, event_id, tmin, tmax, proj=True,
@@ -216,14 +226,14 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   negative_testing_data = torch.tensor(others_test).float()
 
   # Print the size of each of our data structures
-  print("training data count: " + str(training_data.shape[0]))
-  print("positive testing data count: " + str(positive_testing_data.shape[0]))
-  print("negative testing data count: " + str(negative_testing_data.shape[0]))
+  #print("training data count: " + str(training_data.shape[0]))
+  #print("positive testing data count: " + str(positive_testing_data.shape[0]))
+  #print("negative testing data count: " + str(negative_testing_data.shape[0]))
 
   # Generate training labels
   labels = torch.tensor(np.zeros((training_data.shape[0],1))).float()
   labels[0:10] = 1.0
-  print("training labels count: " + str(labels.shape[0]))
+  #print("training labels count: " + str(labels.shape[0]))
 
 
   ## Classify dataset w/ the Neural Network
@@ -234,14 +244,24 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
 
   ## Use our training procedure with the sample data
-  print("Below is the loss graph for dataset training session")
+  #print("Below is the loss graph for dataset training session")
   train_network(training_data, labels, n = 50)
 
   # Classify our positive test dataset and print the results
   classification_1 = model(positive_testing_data)
+  
+  correct = 0
   for index, value in enumerate(classification_1.data.tolist()):
       print("P300 Positive Classification {1}: {0:.2f}%".format(value[0] * 100, index + 1))
-
+      if(value[0] > .5): correct+=1
+  classification_2 = model(negative_testing_data)
+  for index, value in enumerate(classification_2.data.tolist()):
+      print("P300 Negative Classification {1}: {0:.2f}%".format(value[0] * 100, index + 1))
+      if(value[0] < .5): correct+=1
+  accuracy = correct/6
+  print(f"Accuracy: {100 * accuracy:.2f}%")
   #Keeps images on screen
   #while(input("Would you like to finish (Y to exit): ") != "Y"):
       #continue
+  
+  return positive_mean, negative_mean, accuracy, loss_data
