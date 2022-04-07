@@ -24,7 +24,7 @@ def trials(name, trials, learning_list, layer_list):
     for i in range(trials):
         print(f"---------------Test {i+1}---------------")
         print(f"             {name}\n")
-        _,_, accuracy, loss_data = train_and_test(learning_list[i], layer_list[i][0], 
+        _,_, accuracy, loss_data, convergence_point = train_and_test(learning_list[i], layer_list[i][0], 
         layer_list[i][1], layer_list[i][2], layer_list[i][3])
         print("\n\n\n")
         loss_collection.append(loss_data)
@@ -38,14 +38,14 @@ def tests():
 
     #Original trial
     t1_layers = [hidden1, hidden2, hidden3, output]
-    #loss = trials("Original",1,[1e-3], [t1_layers])
+    loss = trials("Original",1,[1e-3], [t1_layers])
 
     #Trial 1: Learning rate changes (2e-3 had best results)
-    loss = trials("Learning rate",5, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [t1_layers, t1_layers,t1_layers,t1_layers,t1_layers])
-    plot_loss(loss, [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"], "learning rate")
+    #loss = trials("Learning rate",5, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [t1_layers, t1_layers,t1_layers,t1_layers,t1_layers])
+    #plot_loss(loss, [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"], "learning rate")
     #Trial 2: NN size change #Could run this over several iterations
-    loss_size = trials("Size", 3, [2e-3,2e-3,2e-3], [[500, 250, 50, output], [1000, 5000, 1000, 30],[1000, 500, 500, 5]]) 
-    plot_loss(loss_size, ["Small", "Large", "Medium"], "NN Size")
+    #loss_size = trials("Size", 3, [2e-3,2e-3,2e-3], [[500, 250, 50, output], [1000, 5000, 1000, 30],[1000, 500, 500, 5]]) 
+    #plot_loss(loss_size, ["Small", "Large", "Medium"], "NN Size")
 
 def main():
     tests()

@@ -80,7 +80,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   def train_network(train_data, actual_class, n):
       # Keep track of loss at every iteration
       loss_data = []
-
+      convergence_point = n #Set to n as default
       # Train for n iterations 
       for i in range(n):
           classification = model(train_data)
@@ -89,6 +89,8 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
           loss = loss_function(classification, actual_class)
           loss_data.append(loss)
 
+          if loss < 0.025:
+              convergence_point = loss
           # Zero out optimizer gradients every iteration
           optimizer.zero_grad()
 
@@ -101,7 +103,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
       #plt.title("Loss Vs Iterations")
       #plt.plot(list(range(0, len(loss_data))), loss_data)
       #plt.show()
-      return loss_data
+      return loss_data, convergence_point
 
   # Save networks default state to retrain from default weights
   torch.save(model, "model_default_state")
@@ -114,7 +116,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
 
   # Train the network using our training procedure with the sample data
-  loss_data = train_network(samples[0], samples[1], n = 100)
+  loss_data, convergence_point = train_network(samples[0], samples[1], n = 100)
 
   # Classify our positive test dataset
   predicted_positives = model(test_positives).data.tolist()
@@ -264,4 +266,4 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   #while(input("Would you like to finish (Y to exit): ") != "Y"):
       #continue
   
-  return positive_mean, negative_mean, accuracy, loss_data
+  return positive_mean, negative_mean, accuracy, loss_data, convergence_point
