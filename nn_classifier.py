@@ -80,7 +80,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   def train_network(train_data, actual_class, n):
       # Keep track of loss at every iteration
       loss_data = []
-      convergence_point = n #Set to n as default
+      converged = False #Set to n as default
       # Train for n iterations 
       for i in range(n):
           classification = model(train_data)
@@ -89,15 +89,17 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
           loss = loss_function(classification, actual_class)
           loss_data.append(loss)
 
-          if loss < 0.025:
-              convergence_point = loss
+          if loss < 0.025 and not converged:
+              convergence_point = (n, loss)
+              converged = True
           # Zero out optimizer gradients every iteration
           optimizer.zero_grad()
 
           # Teach network how to increase performance in next iteration
           loss.backward()
           optimizer.step()
-
+      if not converged:
+        convergence_point = (n, loss)
       # Plot loss graph at end of training
       #rcParams['figure.figsize'] = 10, 5
       #plt.title("Loss Vs Iterations")
@@ -169,8 +171,9 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
 
   # Define what data we want from the dataset
   raw_data = raw_data.pick(picks=["eeg","eog"])
+  
   picks_eeg_only = mne.pick_types(raw_data.info, eeg=True, eog=True, meg=False, exclude='bads')
-
+  
   # Gather events
   events = mne.read_events(event_fname)
   event_id = 5
@@ -197,7 +200,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
 
   # We have 12 p300 samples
   p300s = np.squeeze(epochs.get_data(picks=channel))
-
+  
   # We have 208 non-p300 samples
   others = np.squeeze(epochsNoP300.get_data(picks=channel))
 
@@ -217,11 +220,13 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   p300s_test = p300s[9:12]
   p300s_test = torch.tensor(p300s_test).float()
   p300s_test = p300s_test.detach().numpy()
+  #p300s_test = p300s_test.detach().numpy()
   # Specify Negative P300 train and test samples
   others_train = others[30:39]
   others_test = others[39:42]
   others_test = torch.tensor(others_test).float()
   others_test = others_test.detach().numpy()
+  #others_test = others_test.detach().numpy()
   # Combine everything into their final structures
   training_data = torch.tensor(np.concatenate((p300s_train, others_train), axis = 0)).float()
   positive_testing_data = torch.tensor(p300s_test).float()
@@ -233,7 +238,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   #print("negative testing data count: " + str(negative_testing_data.shape[0]))
 
   # Generate training labels
-  labels = torch.tensor(np.zeros((training_data.shape[0],1))).float()
+  labels = torch.tensor(np.zeros((training_data.shape[0],1))).detach().float()
   labels[0:10] = 1.0
   #print("training labels count: " + str(labels.shape[0]))
 
@@ -260,7 +265,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   for index, value in enumerate(classification_2.data.tolist()):
       print("P300 Negative Classification {1}: {0:.2f}%".format(value[0] * 100, index + 1))
       if(value[0] < .5): correct+=1
-  accuracy = correct/6
+  accuracy = correct/(len(others_test)+len(p300s_test))
   print(f"Accuracy: {100 * accuracy:.2f}%")
   #Keeps images on screen
   #while(input("Would you like to finish (Y to exit): ") != "Y"):
