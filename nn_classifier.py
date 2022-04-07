@@ -214,12 +214,12 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   p300s_train = p300s[0:9]
   p300s_test = p300s[9:12]
   p300s_test = torch.tensor(p300s_test).float()
-
+  p300s_test = p300s_test.detach().numpy()
   # Specify Negative P300 train and test samples
   others_train = others[30:39]
   others_test = others[39:42]
   others_test = torch.tensor(others_test).float()
-
+  others_test = others_test.detach().numpy()
   # Combine everything into their final structures
   training_data = torch.tensor(np.concatenate((p300s_train, others_train), axis = 0)).float()
   positive_testing_data = torch.tensor(p300s_test).float()
