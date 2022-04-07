@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import mne
 from sklearn.preprocessing import RobustScaler
+from extract_positives import extract_p300
 
 # See http://learn.neurotechedu.com/machinelearning/
 
@@ -161,6 +162,13 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   raw_fname = data_path + '/MEG/sample/sample_audvis_filt-0-40_raw.fif'
   event_fname = data_path + '/MEG/sample/sample_audvis_filt-0-40_raw-eve.fif'
 
+  p300s, others = extract_p300(raw_fname, event_fname)
+
+  #raw_fname = data_path + '/MEG/sample/sample_audvis_raw.fif'
+  #event_fname = data_path + '/MEG/sample/sample_audvis_raw-eve.fif'
+  
+  #p300t, otherst = extract_p300(raw_fname, event_fname)
+  """
   # Obtain a reference to the database and preload into RAM
   raw_data = mne.io.read_raw_fif(raw_fname, preload=True) 
 
@@ -213,6 +221,8 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   others = others.transpose()
   others = eeg_data_scaler.fit_transform(others)
   others = others.transpose()
+  """
+
 
   ## Prepare the train and test tensors
   # Specify Positive P300 train and test samples
@@ -255,6 +265,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   train_network(training_data, labels, n = 50)
 
   # Classify our positive test dataset and print the results
+  eeg_sample_length = 902
   classification_1 = model(positive_testing_data)
   
   correct = 0
