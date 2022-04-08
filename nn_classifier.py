@@ -1,3 +1,4 @@
+from ast import Raise
 from collections import OrderedDict
 from pylab import rcParams
 import torch
@@ -10,7 +11,7 @@ from extract_positives import extract_p300
 
 # See http://learn.neurotechedu.com/machinelearning/
 
-def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layers=0):
+def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layers=0, optim="adam"):
   """
   Function to train and test the neural network with customized parameters.
   :param learning_rate: Customized learning rate for training (backprop) as a float.
@@ -18,6 +19,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   :param hidden2: Size of 2nd hidden layer as an int
   :param hidden3: Size of 3rd hidden layer as an int
   :param extra_layers: Number of additional layers to add to the nn
+  :param optim: Optimization function to chose as a string
   :return: Averages of testing scores, but matplot lib plots testing results.
   """
   # Set randomizer seed for consistency
@@ -207,8 +209,14 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   model = torch.load("model_default_state")
 
   ## Define a learning function, needs to be reinitialized every load
-  optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
-
+  if optim == "adam":
+    optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
+  elif optim == "sgd":
+    optimizer = torch.optim.SGD(model.parameters(), lr=1)
+  elif optim == "lbfgs":
+    optimizer = torch.optim.LBFGS(model.parameters(), lr=1, max_iter=20)
+  else:
+    raise Exception("Invalid optimizer")
   ## Use our training procedure with the sample data
   #print("Below is the loss graph for dataset training session")
   train_network(training_data, labels, n = 50)
