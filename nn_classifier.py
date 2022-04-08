@@ -10,13 +10,14 @@ from extract_positives import extract_p300
 
 # See http://learn.neurotechedu.com/machinelearning/
 
-def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
+def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layers=0):
   """
   Function to train and test the neural network with customized parameters.
   :param learning_rate: Customized learning rate for training (backprop) as a float.
   :param hidden1: Size of 1st hidden layer as an int
   :param hidden2: Size of 2nd hidden layer as an int
   :param hidden3: Size of 3rd hidden layer as an int
+  :param extra_layers: Number of additional layers to add to the nn
   :return: Averages of testing scores, but matplot lib plots testing results.
   """
   # Set randomizer seed for consistency
@@ -47,8 +48,6 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   test_negatives = torch.cat([test_negatives_low, test_negatives_high], dim = 0)
 
   #print("We have created a sample dataset with " + str(samples[0].shape[0]) + " samples")
-  #print("Half of those are positive samples with a score of 100%")
-  #print("Half of those are negative samples with a score of 0%")
   #print("We have also created two sets of 10 test samples to check the validity of the network")
 
   ## Network
@@ -61,6 +60,11 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
   # Hidden Layer (Size 500 -> 1000)
   model.add_module('Hidden Linear', nn.Linear(hidden1, hidden2))
   model.add_module('Hidden Activation', nn.ReLU())
+
+  if extra_layers > 0:
+      for i in range(extra_layers):
+        model.add_module(f'Extra Linear {i}', nn.Linear(hidden2, hidden2))
+        model.add_module(f'Hidden Activation {i}', nn.ReLU())
 
   # Hidden Layer (Size 1000 -> 100)
   model.add_module('Hidden Linear2', nn.Linear(hidden2, hidden3))
@@ -164,65 +168,10 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
 
   p300s, others = extract_p300(raw_fname, event_fname)
 
+  #Other data
   #raw_fname = data_path + '/MEG/sample/sample_audvis_raw.fif'
   #event_fname = data_path + '/MEG/sample/sample_audvis_raw-eve.fif'
-  
   #p300t, otherst = extract_p300(raw_fname, event_fname)
-  """
-  # Obtain a reference to the database and preload into RAM
-  raw_data = mne.io.read_raw_fif(raw_fname, preload=True) 
-
-  # EEGs work by detecting the voltage between two points. The second reference
-  # point is set to be the average of all voltages using the following function.
-  # It is also possible to set the reference voltage to a different number.
-  raw_data.set_eeg_reference()
-
-  # Define what data we want from the dataset
-  raw_data = raw_data.pick(picks=["eeg","eog"])
-  
-  picks_eeg_only = mne.pick_types(raw_data.info, eeg=True, eog=True, meg=False, exclude='bads')
-  
-  # Gather events
-  events = mne.read_events(event_fname)
-  event_id = 5
-  tmin = -0.5 
-  tmax = 1
-  epochs = mne.Epochs(raw_data, events, event_id, tmin, tmax, proj=True,
-                      picks=picks_eeg_only, baseline=(None, 0), preload=True,
-                      reject=dict(eeg=100e-6, eog=150e-6), verbose = False)
-
-  # This is the channel used to monitor the P300 response
-  channel = "EEG 058"
-
-  # Display a graph of the sensor position we're using
-  #sensor_position_figure = epochs.plot_sensors(show_names=[channel])
-
-  event_id=[1,2,3,4]
-  epochsNoP300 = mne.Epochs(raw_data, events, event_id, tmin, tmax, proj=True,
-                      picks=picks_eeg_only, baseline=(None, 0), preload=True,
-                      reject=dict(eeg=100e-6, eog=150e-6), verbose = False)
-
-  # mne.viz.plot_compare_evokeds({'P300': epochs.average(picks=channel), 'Other': epochsNoP300[0:12].average(picks=channel)})
-
-  eeg_data_scaler = RobustScaler()
-
-  # We have 12 p300 samples
-  p300s = np.squeeze(epochs.get_data(picks=channel))
-  
-  # We have 208 non-p300 samples
-  others = np.squeeze(epochsNoP300.get_data(picks=channel))
-
-  # Scale the p300 data using the RobustScaler
-  p300s = p300s.transpose()
-  p300s = eeg_data_scaler.fit_transform(p300s)
-  p300s = p300s.transpose()
-
-  # Scale the non-p300 data using the RobustScaler
-  others = others.transpose()
-  others = eeg_data_scaler.fit_transform(others)
-  others = others.transpose()
-  """
-
 
   ## Prepare the train and test tensors
   # Specify Positive P300 train and test samples
@@ -278,8 +227,5 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output):
       if(value[0] < .5): correct+=1
   accuracy = correct/(len(others_test)+len(p300s_test))
   print(f"Accuracy: {100 * accuracy:.2f}%")
-  #Keeps images on screen
-  #while(input("Would you like to finish (Y to exit): ") != "Y"):
-      #continue
   
   return positive_mean, negative_mean, accuracy, loss_data, convergence_point

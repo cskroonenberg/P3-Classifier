@@ -9,7 +9,7 @@ output = 10 # Number of neurons in output layer
 
 #TODO: Make so it can use alternative activation functions, optimization functions (SGD, Adam, etc.) or loss functions.
 
-def trials(name, trials, learning_list, layer_list):
+def trials(name, learning_list, layer_list):
     """
     Function to begin training a customized neural network and report the results. This can be changed
     to have another neural network or expanded to experiment with various training functions.
@@ -20,6 +20,10 @@ def trials(name, trials, learning_list, layer_list):
     The layers are 3 hidden and 1 output.
     :return: Accuracy results, Loss results
     """
+    if(len(layer_list) != len(learning_list)):
+        raise Exception("Learning list size does not match nn list size.")    
+
+    trials = len(layer_list)
     loss_collection = []
     convergence_collection = []
     for i in range(trials):
@@ -40,14 +44,15 @@ def tests():
 
     #Original trial
     t1_layers = [hidden1, hidden2, hidden3, output]
-    #loss, convergence = trials("Original",1,[1e-3], [t1_layers])
-    #plot_loss(loss, convergence, ["original"], "Original")
+    loss, convergence = trials("Original",[1e-3], [t1_layers])
+    plot_loss(loss, convergence, ["original"], "Original")
     #Trial 1: Learning rate changes (2e-3 had best results)
-    loss, convergence = trials("Learning rate",5, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [t1_layers, t1_layers,t1_layers,t1_layers,t1_layers])
-    plot_loss(loss, convergence, [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"], "learning rate")
+    #loss, convergence = trials("Learning rate", [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [t1_layers, t1_layers,t1_layers,t1_layers,t1_layers])
+    #plot_loss(loss, convergence, [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"], "learning rate")
     #Trial 2: NN size change #Could run this over several iterations
-    #loss_size = trials("Size", 3, [2e-3,2e-3,2e-3], [[500, 250, 50, output], [1000, 5000, 1000, 30],[1000, 500, 500, 5]]) 
-    #plot_loss(loss_size, ["Small", "Large", "Medium"], "NN Size")
+    #loss_size, convergence_size = trials("Size", [2e-3,2e-3,2e-3,2e-3,2e-3], [[500, 250, 50, output], 
+    #[1000, 5000, 1000, 30],[1000, 500, 500, 5],[hidden1, hidden2, hidden3, output,1], [hidden1, hidden2, hidden3, output,10]]) 
+    #plot_loss(loss_size, convergence_size, ["Small", "Large", "Medium", "Long", "15 layer"], "NN Size")
 
 def main():
     tests()
