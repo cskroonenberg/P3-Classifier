@@ -46,11 +46,12 @@ def tests():
 
     #Original trial
     t1_layers = [hidden1, hidden2, hidden3, output]
-    loss, convergence = trials("Original",[1e-3], [t1_layers], ["adam"])
-    plot_loss(loss, convergence, ["original"], "Original")
+    #loss, convergence = trials("Original",[1e-3], [t1_layers], ["adam"])
+    #plot_loss(loss, convergence, ["original"], "Original")
+    #print(convergence)
     #Trial 1: Learning rate changes (2e-3 had best results)
-    #loss, convergence = trials("Learning rate", [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [t1_layers, t1_layers,t1_layers,t1_layers,t1_layers], ["adam","adam","adam","adam","adam"])
-    #plot_loss(loss, convergence, [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"], "learning rate")
+    loss, convergence = trials("Learning rate", [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [t1_layers, t1_layers,t1_layers,t1_layers,t1_layers], ["adam","adam","adam","adam","adam"])
+    plot_loss(loss, convergence, [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"], "learning rate")
    
     #Trial 2: NN size change #Could run this over several iterations
     #loss_size, convergence_size = trials("Size", [2e-3,2e-3,2e-3,2e-3,2e-3], [[500, 250, 50, output], 

@@ -96,8 +96,8 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
           loss = loss_function(classification, actual_class)
           loss_data.append(loss)
 
-          if loss < 0.025 and not converged:
-              convergence_point = (n, loss)
+          if loss.detach().numpy() < 0.025 and not converged:
+              convergence_point = (i, loss.detach())
               converged = True
           # Zero out optimizer gradients every iteration
           optimizer.zero_grad()
@@ -106,7 +106,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
           loss.backward()
           optimizer.step()
       if not converged:
-        convergence_point = (n, loss)
+        convergence_point = (n, loss.detach())
       # Plot loss graph at end of training
       #rcParams['figure.figsize'] = 10, 5
       #plt.title("Loss Vs Iterations")
