@@ -13,7 +13,8 @@ def trials(category, names, learning_list, layer_list, optimizers, n):
     """
     Function to begin training a customized neural network and report the results. This can be changed
     to have another neural network or expanded to experiment with various training functions.
-    "param category: Name of trial as str
+    :param category: Name of trial as str
+    param names: Name of each trial as list of str
     :param trials: Number of trials being done as an int
     :param learning_list: List of different learning rates (how fast the network will change its weights)
     :param layer_list: 4 x n list of the sizes of each layer in the nn.
