@@ -14,7 +14,8 @@ def trials(category, names, learning_list, layer_list, optimizers, n):
     """
     Function to begin training a customized neural network and report the results. This can be changed
     to have another neural network or expanded to experiment with various training functions.
-    "param category: Name of trial as str
+    :param category: Name of trial as str
+    param names: Name of each trial as list of str
     :param trials: Number of trials being done as an int
     :param learning_list: List of different learning rates (how fast the network will change its weights)
     :param layer_list: 4 x n list of the sizes of each layer in the nn.
@@ -46,29 +47,33 @@ def tests():
 
     #Original trial
     t1_layers = [hidden1, hidden2, hidden3, output]
-    loss, convergence = trials("Original", ["original"], [1e-3], [t1_layers], ["adam"], [100] * 5)
-    plot_loss(loss, convergence, ["original"], "Original")
+    #loss, convergence = trials("Original", ["original"], [1e-3], [t1_layers], ["adam"], [100] * 5)
+    #plot_loss(loss, convergence, ["original"], "Original")
     #print(convergence)
     
     #Trial 1: Learning rate changes (.1e-3 had best results)
     names = [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"]
-    loss, convergence = trials("Learning rate", names, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [t1_layers] * 5, ["adam"] * 5, [250] * 5)
-    plot_loss(loss, convergence, names, "learning rate")
+    size = 5
+    #loss, convergence = trials("Learning rate", names, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [t1_layers] * size, ["adam"] * size, [250] * size)
+    #plot_loss(loss, convergence, names, "learning rate")
     
     #Trial 2: NN size change #Could run this over several iterations
     names = ["Small", "Large", "Medium", "Long", "15 layer"]
-    loss_size, convergence_size = trials("Size", names, [.1e-3] * 5, [[500, 250, 50, output], 
-    [1000, 5000, 1000, 30],[1000, 500, 500, 5],[hidden1, hidden2, hidden3, output,1], [hidden1, hidden2, hidden3, output,10]], ["adam"] * 5, [250] * 5) 
-    plot_loss(loss_size, convergence_size, names, "NN Size")
+    #size = 5
+    #loss_size, convergence_size = trials("Size", names, [.1e-3] * size, [[500, 250, 50, output], 
+    #[1000, 5000, 1000, 30],[1000, 500, 500, 5],[hidden1, hidden2, hidden3, output,1], [hidden1, hidden2, hidden3, output,10]], ["adam"] * size, [250] * size) 
+    #plot_loss(loss_size, convergence_size, names, "NN Size")
 
     #Trial 3: Differing Optimization functions : #3 tests
     names = ["Adam", "SGD"]
-    loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * 2, [t1_layers] * 2, ["adam", "sgd"], [250] * 2) #lgbfs needs closure 
+    size = 2
+    loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * size, [t1_layers] * size, ["adam", "sgd"], [250] * size) #lgfgs needs closure 
     plot_loss(loss_size, convergence_size, names, "Optim")
     
     #Trial 4: Differing training iterations
     names = ["100", "250", "500", "750", "1000"]
-    loss_size, convergence_size = trials("Iterations", names, [.1e-3] * 5, [t1_layers] * 5, ["adam"] * 5, [100, 250, 500, 750, 1000]) #lgbfs needs closure 
+    size = 5
+    loss_size, convergence_size = trials("Iterations", names, [.1e-3] * size, [t1_layers] * size, ["adam"] * size, [100, 250, 500, 750, 1000]) #lgbfs needs closure 
     plot_loss(loss_size, convergence_size, names, "Iterations")
 
 def main():
