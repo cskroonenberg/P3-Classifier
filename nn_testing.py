@@ -31,7 +31,7 @@ def trials(name, learning_list, layer_list, optimizers):
     for i in range(trials):
         print(f"---------------Test {i+1}---------------")
         print(f"             {name}\n")
-        _,_, accuracy, loss_data, convergence_point = train_and_test(learning_list[i], layer_list[i][0], 
+        accuracy, loss_data, convergence_point = train_and_test(learning_list[i], layer_list[i][0], 
         layer_list[i][1], layer_list[i][2], layer_list[i][3], optim=optimizers[i])
         print("\n\n\n")
         loss_collection.append(loss_data)

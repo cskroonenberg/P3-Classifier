@@ -14,6 +14,6 @@ def plot_loss(loss_collection, convergence_points, labels, title):
         plt.scatter(convergence_points[i][0],convergence_points[i][1],marker="+", color="black")
     plt.title(f"Loss Vs Iterations with {title}")
     plt.ylabel("Loss", fontsize=15)
-    plt.xlabel("Iteration")
+    plt.xlabel("Iteration", fontsize=15)
     plt.legend()
     plt.show()
