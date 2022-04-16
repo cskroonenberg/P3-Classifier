@@ -11,7 +11,7 @@ from imblearn import over_sampling
 
 # See http://learn.neurotechedu.com/machinelearning/
 
-def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layers=0, optim="adam"):
+def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layers=0, optim="adam", n=250):
   """
   Function to train and test the neural network with customized parameters.
   :param learning_rate: Customized learning rate for training (backprop) as a float.
@@ -24,7 +24,6 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   """
   # Set randomizer seed for consistency
   torch.manual_seed(100)
-  eeg_sample_count = 240 # Number of samples to train network with
   eeg_sample_length = 226 # Number of datapoints per sample
   number_of_classes = 1 # 1 Output variable w/ 1.0 = 100%, 0.0 = 0% certainty that sample has p300  
   
@@ -96,15 +95,14 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   data_path = mne.datasets.sample.data_path()
   raw_fname = data_path + '/MEG/sample/sample_audvis_filt-0-40_raw.fif'
   event_fname = data_path + '/MEG/sample/sample_audvis_filt-0-40_raw-eve.fif'
-  p300s, others = extract_p300(raw_fname, event_fname)
   
   # combine datasets
+  p300s, others = extract_p300(raw_fname, event_fname)
   X = np.concatenate((p300s, others))
-  p300_labels = [0 for i in range(len(p300s))]
-  others_labels = [1 for i in range(len(others))]
 
   # combine labels
-  p300_labels.extend(others_labels)
+  p300_labels = [0 for i in range(len(p300s))]
+  others_labels = [1 for i in range(len(others))]
   y = np.concatenate((p300_labels, others_labels))
 
   # oversampling
@@ -138,13 +136,16 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
     raise Exception("Invalid optimizer")
 
   ## Train NN
-  loss_data, convergence_point = train_network(X_trainTensor1, y_trainTensor1, n = 200)
+  loss_data, convergence_point = train_network(X_trainTensor1, y_trainTensor1, n)
 
   # Predict labels for test dataset
   y_pred = model(X_testTensor1)
 
   # compare prediction to actual
-  TP, TN, FN, FP = 0
+  TP = 0
+  TN = 0
+  FN = 0
+  FP = 0
   for i, value in enumerate(y_pred.data.tolist()):
       if value[0] <= .5:
         if y_testTensor1[i] == 0: TN+=1
@@ -162,4 +163,3 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   print(f"Recall: {100 * recall:.2f}%")
   
   return accuracy, loss_data, convergence_point
-  # return positive_mean, negative_mean, accuracy, loss_data, convergence_point
