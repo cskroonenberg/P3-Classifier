@@ -1,4 +1,3 @@
-from pickletools import optimize
 from nn_classifier import train_and_test
 from nn_plots import plot_loss
 #First test
@@ -39,39 +38,40 @@ def trials(category, names, learning_list, layer_list, optimizers, n):
 
     return loss_collection, convergence_collection
 
-def tests():
+def tests(trial):
     """
     """
-    #Trial with default values
+    # Default layers
+    default_layers = [hidden1, hidden2, hidden3, output]
 
-    #Original trial
-    t1_layers = [hidden1, hidden2, hidden3, output]
-    loss, convergence = trials("Original", ["original"], [1e-3], [t1_layers], ["adam"], [100] * 5)
-    plot_loss(loss, convergence, ["original"], "Original")
-    #print(convergence)
+    if trial == 0:
+        #Original trial
+        loss, convergence = trials("Original", ["original"], [1e-3], [default_layers], ["adam"], [500])
+        plot_loss(loss, convergence, ["original"], "Original")
+    elif trial == 1:
+        #Trial 1: Learning rate changes (.1e-3 had best results)
+        names = [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"]
+        loss, convergence = trials("Learning rate", names, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [default_layers] * len(names), ["adam"] * len(names), [500] * len(names))
+        plot_loss(loss, convergence, names, "learning rate")
+    elif trial == 2:
+        #Trial 2: NN size change #Could run this over several iterations
+        names = ["Small", "Large", "Medium", "Long", "15 layer"]
+        loss_size, convergence_size = trials("Size", names, [.1e-3] * len(names), [[500, 250, 50, output], 
+        [1000, 5000, 1000, 30],[1000, 500, 500, 5],[hidden1, hidden2, hidden3, output,1], [hidden1, hidden2, hidden3, output,10]], ["adam"] * len(names), [500] * len(names)) 
+        plot_loss(loss_size, convergence_size, names, "NN Size")
+    elif trial == 3:
+        #Trial 3: Differing Optimization functions : #3 tests
+        names = ["Adam", "SGD"]
+        loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam", "sgd"], [500] * len(names)) #lgbfs needs closure 
+        plot_loss(loss_size, convergence_size, names, "Optim")
+    elif trial == 4:
+        #Trial 4: Differing training iterations
+        names = ["100", "250", "500", "750", "1000"]
+        loss_size, convergence_size = trials("Iterations", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [100, 250, 500, 750, 1000])
+        plot_loss(loss_size, convergence_size, names, "Iterations")
     
-    #Trial 1: Learning rate changes (.1e-3 had best results)
-    names = [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"]
-    loss, convergence = trials("Learning rate", names, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [t1_layers] * 5, ["adam"] * 5, [250] * 5)
-    plot_loss(loss, convergence, names, "learning rate")
-    
-    #Trial 2: NN size change #Could run this over several iterations
-    names = ["Small", "Large", "Medium", "Long", "15 layer"]
-    loss_size, convergence_size = trials("Size", names, [.1e-3] * 5, [[500, 250, 50, output], 
-    [1000, 5000, 1000, 30],[1000, 500, 500, 5],[hidden1, hidden2, hidden3, output,1], [hidden1, hidden2, hidden3, output,10]], ["adam"] * 5, [250] * 5) 
-    plot_loss(loss_size, convergence_size, names, "NN Size")
-
-    #Trial 3: Differing Optimization functions : #3 tests
-    names = ["Adam", "SGD"]
-    loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * 2, [t1_layers] * 2, ["adam", "sgd"], [250] * 2) #lgbfs needs closure 
-    plot_loss(loss_size, convergence_size, names, "Optim")
-    
-    #Trial 4: Differing training iterations
-    names = ["100", "250", "500", "750", "1000"]
-    loss_size, convergence_size = trials("Iterations", names, [.1e-3] * 5, [t1_layers] * 5, ["adam"] * 5, [100, 250, 500, 750, 1000]) #lgbfs needs closure 
-    plot_loss(loss_size, convergence_size, names, "Iterations")
-
 def main():
-    tests()
+    t = int(input('Which trial would you like to test?\n0) Original Trial\n1) Learning Rate Changes\n2) Hidden Layer Size changes\n3) Optimization function changes\n4) Training iteration changes\n> '))
+    tests(t)
 
 main()
