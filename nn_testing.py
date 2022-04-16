@@ -1,6 +1,6 @@
 from nn_classifier import train_and_test
 from nn_plots import plot_loss
-#First test
+import time
 
 hidden1 = 500 # Number of neurons in first hidden layer
 hidden2 = 1000 # Number of neurons in second hidden layer
@@ -61,14 +61,16 @@ def tests(trial):
         plot_loss(loss_size, convergence_size, names, "NN Size")
     elif trial == 3:
         #Trial 3: Differing Optimization functions : #3 tests
-        names = ["Adam", "SGD"]
-        loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam", "sgd"], [500] * len(names)) #lgbfs needs closure 
+        names = ["Adam", "SGD", "ASGD", "Adamax", "RProp"]
+        loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam", "sgd", "asgd", "adamax", "rprop"], [500] * len(names)) #lgbfs needs closure 
         plot_loss(loss_size, convergence_size, names, "Optim")
     elif trial == 4:
         #Trial 4: Differing training iterations
         names = ["100", "250", "500", "750", "1000"]
         loss_size, convergence_size = trials("Iterations", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [100, 250, 500, 750, 1000])
         plot_loss(loss_size, convergence_size, names, "Iterations")
+    else:
+        print('Invalid input.')
     
 def main():
     t = int(input('Which trial would you like to test?\n0) Original Trial\n1) Learning Rate Changes\n2) Hidden Layer Size changes\n3) Optimization function changes\n4) Training iteration changes\n> '))

@@ -1,6 +1,3 @@
-from ast import Raise
-from collections import OrderedDict
-from pylab import rcParams
 import torch
 import torch.nn as nn
 import numpy as np
@@ -132,6 +129,12 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
     optimizer = torch.optim.SGD(model.parameters(), lr=1)
   elif optim == "lbfgs":
     optimizer = torch.optim.LBFGS(model.parameters(), lr=1, max_iter=20)
+  elif optim == "asgd":
+    optimizer = torch.optim.ASGD(model.parameters(), lr=learning_rate)
+  elif optim == "adamax":
+    optimizer = torch.optim.Adamax(model.parameters(), lr=learning_rate)
+  elif optim == "rprop":
+    optimizer = torch.optim.Rprop(model.parameters(), lr=learning_rate)
   else:
     raise Exception("Invalid optimizer")
 
