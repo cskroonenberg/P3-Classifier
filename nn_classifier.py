@@ -158,8 +158,10 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   accuracy = (TP + TN)/(TP + TN + FP + FN)
   precision = TP/(TP + FP)
   recall = TP/(TP + FN)
+  f1_score = 2 * ((precision * recall) / (precision + recall))
   print(f"Accuracy: {100 * accuracy:.2f}%")
   print(f"Precision: {100 * precision:.2f}%")
   print(f"Recall: {100 * recall:.2f}%")
+  print(f"F1 Score: {100 * f1_score:.2f}%")
   
   return accuracy, loss_data, convergence_point

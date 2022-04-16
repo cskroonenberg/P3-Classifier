@@ -46,7 +46,7 @@ def tests():
 
     #Original trial
     t1_layers = [hidden1, hidden2, hidden3, output]
-    #loss, convergence = trials("Original",[1e-3], [t1_layers], ["adam"])
+    #loss, convergence = trials("Original",[1e-3], [t1_layers], ["adam"], [100] * 5)
     #plot_loss(loss, convergence, ["original"], "Original")
     #print(convergence)
     
