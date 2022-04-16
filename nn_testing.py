@@ -31,9 +31,11 @@ def trials(category, names, learning_list, layer_list, optimizers, n):
     for i in range(trials):
         print(f"---------------Test {i+1}---------------")
         print(f"          {category} - {names[i]}\n")
+        t0 = time.time()
         accuracy, loss_data, convergence_point = train_and_test(learning_list[i], layer_list[i][0], 
         layer_list[i][1], layer_list[i][2], layer_list[i][3], optim=optimizers[i], n=n[i])
-        print("\n\n\n")
+        t1 = time.time()
+        print(f'Elapsed time: {t1-t0:.2f} s\n\n\n')
         loss_collection.append(loss_data)
         convergence_collection.append(convergence_point)
 
