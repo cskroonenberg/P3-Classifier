@@ -144,14 +144,22 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   y_pred = model(X_testTensor1)
 
   # compare prediction to actual
-  correct = 0
+  TP, TN, FN, FP = 0
   for i, value in enumerate(y_pred.data.tolist()):
-      if value[0] <= .5 and y_testTensor1[i] == 0: correct+=1
-      if value[0] > .5 and y_testTensor1[i] == 1: correct+=1
+      if value[0] <= .5:
+        if y_testTensor1[i] == 0: TN+=1
+        else: FN+=1
+      if value[0] > .5:
+        if y_testTensor1[i] == 1: TP+=1
+        else: FP+=1
 
   # calculate accuracy
-  accuracy = correct/y_testTensor1.size()[0]
+  accuracy = (TP + TN)/(TP + TN + FP + FN)
+  precision = TP/(TP + FP)
+  recall = TP/(TP + FN)
   print(f"Accuracy: {100 * accuracy:.2f}%")
+  print(f"Precision: {100 * precision:.2f}%")
+  print(f"Recall: {100 * recall:.2f}%")
   
   return accuracy, loss_data, convergence_point
   # return positive_mean, negative_mean, accuracy, loss_data, convergence_point
