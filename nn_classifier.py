@@ -69,7 +69,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
           
           # Calculate loss
           loss = loss_function(classification, labels) # Error here
-          loss_data.append(loss)
+          loss_data.append(loss.detach().numpy())
           if loss.detach().numpy() < 0.025 and not converged:
               convergence_point = (i, loss.detach())
               converged = True
@@ -159,9 +159,10 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   precision = TP/(TP + FP)
   recall = TP/(TP + FN)
   f1_score = 2 * ((precision * recall) / (precision + recall))
+  print("\n-----------------\n  Scores:\n-----------------")
   print(f"Accuracy: {100 * accuracy:.2f}%")
   print(f"Precision: {100 * precision:.2f}%")
   print(f"Recall: {100 * recall:.2f}%")
   print(f"F1 Score: {100 * f1_score:.2f}%")
-  
+  print("-----------------")
   return accuracy, loss_data, convergence_point
