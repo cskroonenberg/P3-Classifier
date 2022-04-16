@@ -6,6 +6,8 @@ import torch.nn as nn
 import numpy as np
 import mne
 from extract_positives import extract_p300
+from sklearn.model_selection import train_test_split
+from imblearn import over_sampling
 
 # See http://learn.neurotechedu.com/machinelearning/
 
@@ -58,18 +60,17 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   loss_function = torch.nn.MSELoss()
 
   # Define a training procedure
-  def train_network(train_data, actual_class, n):
+  def train_network(train_data, labels, n):
       # Keep track of loss at every iteration
       loss_data = []
       converged = False #Set to n as default
       # Train for n iterations 
       for i in range(n):
           classification = model(train_data)
-
+          
           # Calculate loss
-          loss = loss_function(classification, actual_class)
+          loss = loss_function(classification, labels) # Error here
           loss_data.append(loss)
-
           if loss.detach().numpy() < 0.025 and not converged:
               convergence_point = (i, loss.detach())
               converged = True
@@ -93,44 +94,38 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   
   ## Retrieve Data from MNE EEG Dataset
   data_path = mne.datasets.sample.data_path()
-
   raw_fname = data_path + '/MEG/sample/sample_audvis_filt-0-40_raw.fif'
   event_fname = data_path + '/MEG/sample/sample_audvis_filt-0-40_raw-eve.fif'
-
   p300s, others = extract_p300(raw_fname, event_fname)
   
-  ## Prepare the train and test tensors
-  # Specify Positive P300 train and test samples
-  p300s_train = p300s[0:9]
-  p300s_test = p300s[9:12]
-  p300s_test = torch.tensor(p300s_test).float()
-  p300s_test = p300s_test.detach().numpy()
-  #p300s_test = p300s_test.detach().numpy()
-  # Specify Negative P300 train and test samples
-  others_train = others[30:39]
-  others_test = others[39:42]
-  others_test = torch.tensor(others_test).float()
-  others_test = others_test.detach().numpy()
-  #others_test = others_test.detach().numpy()
-  # Combine everything into their final structures
-  training_data = torch.tensor(np.concatenate((p300s_train, others_train), axis = 0)).float()
-  positive_testing_data = torch.tensor(p300s_test).float()
-  negative_testing_data = torch.tensor(others_test).float()
+  # combine datasets
+  X = np.concatenate((p300s, others))
+  p300_labels = [0 for i in range(len(p300s))]
+  others_labels = [1 for i in range(len(others))]
 
-  # Print the size of each of our data structures
-  # print("training data count: " + str(training_data.shape[0]))
-  # print("positive testing data count: " + str(positive_testing_data.shape[0]))
-  # print("negative testing data count: " + str(negative_testing_data.shape[0]))
-  
-  # Generate training labels
-  labels = torch.tensor(np.zeros((training_data.shape[0],1))).detach().float()
-  labels[0:10] = 1.0
-  #print("training labels count: " + str(labels.shape[0]))
+  # combine labels
+  p300_labels.extend(others_labels)
+  y = np.concatenate((p300_labels, others_labels))
 
+  # oversampling
+  X, y = over_sampling.ADASYN().fit_resample(X, y)
+
+  # split data into training and test datasets
+  X_trainFold1, X_testFold1, y_trainFold1, y_testFold1 = train_test_split(X, y, test_size=0.50, random_state=1)
+
+  # Convert data to tensors
+  X_trainTensor1 = torch.from_numpy(X_trainFold1).float()
+  X_testTensor1 = torch.from_numpy(X_testFold1).float()
+  y_trainTensor1 = torch.FloatTensor(y_trainFold1).float()
+  y_testTensor1 = torch.FloatTensor(y_testFold1).float()
+
+  # transform y tensors to have proper size
+  new_shape = (len(y_trainFold1), 1)
+  y_trainTensor1 = y_trainTensor1.view(new_shape)
+  y_testTensor1 = y_testTensor1.view(new_shape)
 
   ## Classify dataset w/ the Neural Network
-  # Make sure we're starting from untrained every time
-  model = torch.load("model_default_state")
+  model = torch.load("model_default_state") # Make sure we're starting from untrained every time
 
   ## Define a learning function, needs to be reinitialized every load
   if optim == "adam":
@@ -142,23 +137,20 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   else:
     raise Exception("Invalid optimizer")
 
-  ## Use our training procedure with the sample data
-  #print("Below is the loss graph for dataset training session")
-  loss_data, convergence_point = train_network(training_data, labels, n = 50)
+  ## Train NN
+  loss_data, convergence_point = train_network(X_trainTensor1, y_trainTensor1, n = 200)
 
-  # Classify our positive test dataset and print the results
-  eeg_sample_length = 902
-  classification_1 = model(positive_testing_data)
-  
+  # Predict labels for test dataset
+  y_pred = model(X_testTensor1)
+
+  # compare prediction to actual
   correct = 0
-  for index, value in enumerate(classification_1.data.tolist()):
-      print("P300 Positive Classification {1}: {0:.2f}%".format(value[0] * 100, index + 1))
-      if(value[0] > .5): correct+=1
-  classification_2 = model(negative_testing_data)
-  for index, value in enumerate(classification_2.data.tolist()):
-      print("P300 Negative Classification {1}: {0:.2f}%".format(value[0] * 100, index + 1))
-      if(value[0] < .5): correct+=1
-  accuracy = correct/(len(others_test)+len(p300s_test))
+  for i, value in enumerate(y_pred.data.tolist()):
+      if value[0] <= .5 and y_testTensor1[i] == 0: correct+=1
+      if value[0] > .5 and y_testTensor1[i] == 1: correct+=1
+
+  # calculate accuracy
+  accuracy = correct/y_testTensor1.size()[0]
   print(f"Accuracy: {100 * accuracy:.2f}%")
   
   return accuracy, loss_data, convergence_point
