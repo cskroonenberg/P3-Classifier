@@ -80,6 +80,25 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
         convergence_point = (n, loss.detach())
 
       return loss_data, convergence_point
+  
+  def train_lbfgs(optimizer, train_data, labels, n):
+    loss_data = []
+
+    for i in range(n):
+      def closure():
+        if torch.is_grad_enabled():
+          optimizer.zero_grad()
+        classification = model(train_data)
+        loss = loss_function(classification, labels)
+        loss_data.append(loss.detach().numpy())
+        if loss.requires_grad:
+          loss.backward()
+        return loss
+      optimizer.step(closure)
+  
+    convergence_point = (0, 0) #Dummy variable
+
+    return loss_data, convergence_point
 
   # Save networks default state to retrain from default weights
   torch.save(model, "model_default_state")
@@ -128,7 +147,8 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   elif optim == "sgd":
     optimizer = torch.optim.SGD(model.parameters(), lr=1)
   elif optim == "lbfgs":
-    optimizer = torch.optim.LBFGS(model.parameters(), lr=1, max_iter=20)
+    optimizer = torch.optim.LBFGS(model.parameters(), line_search_fn='strong_wolfe')
+    loss_data, convergence_point = train_lbfgs(optimizer, X_trainTensor1, y_trainTensor1, n)
   elif optim == "asgd":
     optimizer = torch.optim.ASGD(model.parameters(), lr=learning_rate)
   elif optim == "adamax":
@@ -139,7 +159,8 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
     raise Exception("Invalid optimizer")
 
   ## Train NN
-  loss_data, convergence_point = train_network(X_trainTensor1, y_trainTensor1, n)
+  if optim != "lbfgs":
+    loss_data, convergence_point = train_network(X_trainTensor1, y_trainTensor1, n)
 
   # Predict labels for test dataset
   y_pred = model(X_testTensor1)

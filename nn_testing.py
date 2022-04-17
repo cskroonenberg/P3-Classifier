@@ -64,8 +64,8 @@ def tests(trial):
         plot_loss(loss_size, convergence_size, names, "NN Size")
     elif trial == 3:
         #Trial 3: Differing Optimization functions : #3 tests
-        names = ["Adam", "SGD", "ASGD", "Adamax", "RProp"]
-        loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam", "sgd", "asgd", "adamax", "rprop"], [500] * len(names)) #lgbfs needs closure 
+        names = ["Adam", "SGD", "ASGD", "Adamax", "RProp", "LBFGS"]
+        loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam", "sgd", "asgd", "adamax", "rprop", "lbfgs"], [500] * len(names)) #lgbfs needs closure 
         plot_loss(loss_size, convergence_size, names, "Optim")
     elif trial == 4:
         #Trial 4: Differing training iterations
