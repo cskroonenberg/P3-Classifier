@@ -8,7 +8,7 @@ from imblearn import over_sampling
 
 # See http://learn.neurotechedu.com/machinelearning/
 
-def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layers=0, optim="adam", n=250):
+def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layers=0, optim="adam", n=250, split=0.5):
   """
   Function to train and test the neural network with customized parameters.
   :param learning_rate: Customized learning rate for training (backprop) as a float.
@@ -17,6 +17,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   :param hidden3: Size of 3rd hidden layer as an int
   :param extra_layers: Number of additional layers to add to the nn
   :param optim: Optimization function to chose as a string
+  :param split: Portion of data used for testing
   :return: Averages of testing scores, but matplot lib plots testing results.
   """
   # Set randomizer seed for consistency
@@ -117,15 +118,15 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   X = np.concatenate((p300s, others))
 
   # combine labels
-  p300_labels = [0 for i in range(len(p300s))]
-  others_labels = [1 for i in range(len(others))]
+  p300_labels = [1] * len(p300s)
+  others_labels = [0] * len(others)
   y = np.concatenate((p300_labels, others_labels))
 
   # oversampling
   X, y = over_sampling.ADASYN().fit_resample(X, y)
 
   # split data into training and test datasets
-  X_trainFold1, X_testFold1, y_trainFold1, y_testFold1 = train_test_split(X, y, test_size=0.50, random_state=1)
+  X_trainFold1, X_testFold1, y_trainFold1, y_testFold1 = train_test_split(X, y, test_size=split, random_state=1)
 
   # Convert data to tensors
   X_trainTensor1 = torch.from_numpy(X_trainFold1).float()
@@ -134,9 +135,8 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   y_testTensor1 = torch.FloatTensor(y_testFold1).float()
 
   # transform y tensors to have proper size
-  new_shape = (len(y_trainFold1), 1)
-  y_trainTensor1 = y_trainTensor1.view(new_shape)
-  y_testTensor1 = y_testTensor1.view(new_shape)
+  y_trainTensor1 = y_trainTensor1.view((len(y_trainFold1), 1))
+  y_testTensor1 = y_testTensor1.view((len(y_testFold1), 1))
 
   ## Classify dataset w/ the Neural Network
   model = torch.load("model_default_state") # Make sure we're starting from untrained every time
@@ -170,6 +170,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   TN = 0
   FN = 0
   FP = 0
+  # 1 = P300 classification, 0 = Non-P300 classification
   for i, value in enumerate(y_pred.data.tolist()):
       if value[0] <= .5:
         if y_testTensor1[i] == 0: TN+=1
