@@ -87,7 +87,7 @@ def tests(trial):
                     for n in [100, 250, 500, 750, 1000]:
                         for s in [0.5, 0.3, 0.2]:
                             t0 = time.time()
-                            accuracy, loss_data, convergence_point, precision, recall, f1 = train_and_test(lr, size[0], size[1], size[2], size[3], optim=o, n=n, split=s)
+                            accuracy, loss_data, convergence_point, convergence_time, precision, recall, f1 = train_and_test(lr, size[0], size[1], size[2], size[3], optim=o, n=n, split=s)
                             t1 = time.time()
                             log_entry = {"trial": t,
                                 "learning rate": lr,
