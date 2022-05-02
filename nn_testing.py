@@ -32,11 +32,10 @@ def trials(category, names, learning_list, layer_list, optimizers, n, split):
     for i in range(trials):
         print(f"---------------Test {i+1}---------------")
         print(f"          {category} - {names[i]}\n")
-        t0 = time.time()
-        accuracy, loss_data, convergence_point, precision, recall, f1 = train_and_test(learning_list[i], layer_list[i][0], 
+
+        accuracy, loss_data, convergence_point, time, precision, recall, f1 = train_and_test(learning_list[i], layer_list[i][0], 
         layer_list[i][1], layer_list[i][2], layer_list[i][3], optim=optimizers[i], n=n[i], split=split[i])
-        t1 = time.time()
-        print(f'Elapsed time: {t1-t0:.2f} s\n\n\n')
+        print(f'Elapsed time: {time:.2f} s\n\n\n')
         loss_collection.append(loss_data)
         convergence_collection.append(convergence_point)
 
@@ -65,8 +64,8 @@ def tests(trial):
         plot_loss(loss_size, convergence_size, names, "NN Size")
     elif trial == 3:
         #Trial 3: Differing Optimization functions : #3 tests
-        names = ["Adam", "SGD", "Adamax", "RProp", "LBFGS"]
-        loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam", "sgd", "adamax", "rprop", "lbfgs"], [125] * len(names), [0.5] * len(names)) #lgbfs needs closure 
+        names = ["LBFGS", "SGD", "Adam", "Adamax", "RProp"]
+        loss_size, convergence_size = trials("Optimizer", names, [.1e-3] * len(names), [default_layers] * len(names), ["lbfgs", "sgd", "adam", "adamax", "rprop"], [300] * len(names)) #lgbfs needs closure 
         plot_loss(loss_size, convergence_size, names, "Optim")
     elif trial == 4:
         #Trial 4: Differing training iterations
