@@ -190,4 +190,4 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   print(f"Recall: {100 * recall:.2f}%")
   print(f"F1 Score: {100 * f1_score:.2f}%")
   print("-----------------")
-  return accuracy, loss_data, convergence_point
+  return accuracy, loss_data, convergence_point, precision, recall, f1_score
