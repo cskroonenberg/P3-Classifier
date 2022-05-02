@@ -186,9 +186,9 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
 
   # calculate accuracy
   accuracy = (TP + TN)/(TP + TN + FP + FN)
-  precision = TP/(TP + FP)
-  recall = TP/(TP + FN)
-  f1_score = 2 * ((precision * recall) / (precision + recall))
+  precision = TP/(TP + FP) if (TP + FP) != 0 else 0
+  recall = TP/(TP + FN) if (TP + FN) != 0 else 0
+  f1_score = 2 * ((precision * recall) / (precision + recall)) if (precision + recall) != 0 else 0
   print("\n-----------------\n  Scores:\n-----------------")
   print(f"Accuracy: {100 * accuracy:.2f}%")
   print(f"Precision: {100 * precision:.2f}%")
