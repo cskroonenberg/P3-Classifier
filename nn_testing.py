@@ -8,7 +8,7 @@ output = 10 # Number of neurons in output layer
 
 #TODO: Make so it can use alternative activation functions, optimization functions (SGD, Adam, etc.) or loss functions.
 
-def trials(category, names, learning_list, layer_list, optimizers, n):
+def trials(category, names, learning_list, layer_list, optimizers, n, split):
     """
     Function to begin training a customized neural network and report the results. This can be changed
     to have another neural network or expanded to experiment with various training functions.
@@ -30,9 +30,9 @@ def trials(category, names, learning_list, layer_list, optimizers, n):
     for i in range(trials):
         print(f"---------------Test {i+1}---------------")
         print(f"          {category} - {names[i]}\n")
-        
+
         accuracy, loss_data, convergence_point, time = train_and_test(learning_list[i], layer_list[i][0], 
-        layer_list[i][1], layer_list[i][2], layer_list[i][3], optim=optimizers[i], n=n[i])
+        layer_list[i][1], layer_list[i][2], layer_list[i][3], optim=optimizers[i], n=n[i], split=split[i])
         print(f'Elapsed time: {time:.2f} s\n\n\n')
         loss_collection.append(loss_data)
         convergence_collection.append(convergence_point)
@@ -47,18 +47,18 @@ def tests(trial):
 
     if trial == 0:
         #Original trial
-        loss, convergence = trials("Original", ["original"], [1e-3], [default_layers], ["adam"], [500])
+        loss, convergence = trials("Original", ["original"], [1e-3], [default_layers], ["adam"], [500], [0.5])
         plot_loss(loss, convergence, ["original"], "Original")
     elif trial == 1:
         #Trial 1: Learning rate changes (.1e-3 had best results)
         names = [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"]
-        loss, convergence = trials("Learning rate", names, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [default_layers] * len(names), ["adam"] * len(names), [500] * len(names))
+        loss, convergence = trials("Learning rate", names, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [default_layers] * len(names), ["adam"] * len(names), [500] * len(names), [0.5] * len(names))
         plot_loss(loss, convergence, names, "learning rate")
     elif trial == 2:
         #Trial 2: NN size change #Could run this over several iterations
         names = ["Small", "Large", "Medium", "Long", "15 layer"]
         loss_size, convergence_size = trials("Size", names, [.1e-3] * len(names), [[500, 250, 50, output], 
-        [1000, 5000, 1000, 30],[1000, 500, 500, 5],[hidden1, hidden2, hidden3, output,1], [hidden1, hidden2, hidden3, output,10]], ["adam"] * len(names), [500] * len(names)) 
+        [1000, 5000, 1000, 30],[1000, 500, 500, 5],[hidden1, hidden2, hidden3, output,1], [hidden1, hidden2, hidden3, output,10]], ["adam"] * len(names), [500] * len(names), [0.5] * len(names)) 
         plot_loss(loss_size, convergence_size, names, "NN Size")
     elif trial == 3:
         #Trial 3: Differing Optimization functions : #3 tests
@@ -68,13 +68,18 @@ def tests(trial):
     elif trial == 4:
         #Trial 4: Differing training iterations
         names = ["100", "250", "500", "750", "1000"]
-        loss_size, convergence_size = trials("Iterations", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [100, 250, 500, 750, 1000])
+        loss_size, convergence_size = trials("Iterations", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [100, 250, 500, 750, 1000], [0.5] * len(names))
         plot_loss(loss_size, convergence_size, names, "Iterations")
+    elif trial == 5:
+        #Trial 5: Differing train:test splits
+        names = ["50:50", "70:30", "80:20"]
+        loss_size, convergence_size = trials("Train:Test Split", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [500] * len(names), [0.5, 0.3, 0.2])
+        plot_loss(loss_size, convergence_size, names, "Train:Test Split")
     else:
         print('Invalid input.')
     
 def main():
-    t = int(input('Which trial would you like to test?\n0) Original Trial\n1) Learning Rate Changes\n2) Hidden Layer Size changes\n3) Optimization function changes\n4) Training iteration changes\n> '))
+    t = int(input('Which trial would you like to test?\n0) Original Trial\n1) Learning Rate Changes\n2) Hidden Layer Size changes\n3) Optimization function changes\n4) Training iteration changes\n5) Train:Test split changes\n> '))
     tests(t)
 
 main()
