@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import mne
+import time
 from extract_positives import extract_p300
 from sklearn.model_selection import train_test_split
 from imblearn import over_sampling
@@ -17,7 +18,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   :param hidden3: Size of 3rd hidden layer as an int
   :param extra_layers: Number of additional layers to add to the nn
   :param optim: Optimization function to chose as a string
-  :return: Averages of testing scores, but matplot lib plots testing results.
+  :return: Averages of testing scores, convergence times, but matplot lib plots testing results.
   """
   # Set randomizer seed for consistency
   torch.manual_seed(100)
@@ -58,6 +59,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   # Define a training procedure
   def train_network(train_data, labels, n):
       # Keep track of loss at every iteration
+    
       loss_data = []
       converged = False #Set to n as default
       # Train for n iterations 
@@ -67,9 +69,10 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
           # Calculate loss
           loss = loss_function(classification, labels) # Error here
           loss_data.append(loss.detach().numpy())
-          if loss.detach().numpy() < 0.025 and not converged:
+          if loss.detach().numpy() < 0.005 and not converged:
               convergence_point = (i, loss.detach())
               converged = True
+              break
           # Zero out optimizer gradients every iteration
           optimizer.zero_grad()
 
@@ -83,7 +86,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   
   def train_lbfgs(optimizer, train_data, labels, n):
     loss_data = []
-
+    n = 25 #reset n
     for i in range(n):
       def closure():
         if torch.is_grad_enabled():
@@ -96,7 +99,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
         return loss
       optimizer.step(closure)
   
-    convergence_point = (0, 0) #Dummy variable
+    convergence_point = (22, 0.025) #Dummy variable - #NOTE only used for original size
 
     return loss_data, convergence_point
 
@@ -142,6 +145,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   model = torch.load("model_default_state") # Make sure we're starting from untrained every time
 
   ## Define a learning function, needs to be reinitialized every load
+  t0 = time.time()
   if optim == "adam":
     optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate)
   elif optim == "sgd":
@@ -150,7 +154,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
     optimizer = torch.optim.LBFGS(model.parameters(), line_search_fn='strong_wolfe')
     loss_data, convergence_point = train_lbfgs(optimizer, X_trainTensor1, y_trainTensor1, n)
   elif optim == "asgd":
-    optimizer = torch.optim.ASGD(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.ASGD(model.parameters())
   elif optim == "adamax":
     optimizer = torch.optim.Adamax(model.parameters(), lr=learning_rate)
   elif optim == "rprop":
@@ -161,7 +165,8 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   ## Train NN
   if optim != "lbfgs":
     loss_data, convergence_point = train_network(X_trainTensor1, y_trainTensor1, n)
-
+  t1 = time.time()
+  convergence_time = t1-t0
   # Predict labels for test dataset
   y_pred = model(X_testTensor1)
 
@@ -189,4 +194,4 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   print(f"Recall: {100 * recall:.2f}%")
   print(f"F1 Score: {100 * f1_score:.2f}%")
   print("-----------------")
-  return accuracy, loss_data, convergence_point
+  return accuracy, loss_data, convergence_point, convergence_time
