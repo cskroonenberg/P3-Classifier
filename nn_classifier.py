@@ -167,14 +167,38 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
     loss_data, convergence_point = train_network(X_trainTensor1, y_trainTensor1, n)
   t1 = time.time()
   convergence_time = t1-t0
+
+  # compare prediction to actual - training results
+  y_predt = model(X_trainTensor1)
+  TP, TN, FN, FP = 0, 0, 0, 0
+
+  # 1 = P300 classification, 0 = Non-P300 classification
+  for i, value in enumerate(y_predt.data.tolist()):
+      if value[0] <= .5:
+        if y_trainTensor1[i] == 0: TN+=1
+        else: FN+=1
+      if value[0] > .5:
+        if y_trainTensor1[i] == 1: TP+=1
+        else: FP+=1
+
+  # calculate accuracy
+  accuracy = (TP + TN)/(TP + TN + FP + FN)
+  precision = TP/(TP + FP)
+  recall = TP/(TP + FN)
+  f1_score_train = 2 * ((precision * recall) / (precision + recall))
+  print("\n--------------\nTraining Scores:\n-----------------")
+  print(f"Accuracy: {100 * accuracy:.2f}%")
+  print(f"Precision: {100 * precision:.2f}%")
+  print(f"Recall: {100 * recall:.2f}%")
+  print(f"F1 Score: {100 * f1_score_train:.2f}%")
+  print("-----------------")
+
   # Predict labels for test dataset
   y_pred = model(X_testTensor1)
 
   # compare prediction to actual
-  TP = 0
-  TN = 0
-  FN = 0
-  FP = 0
+  TP, TN, FN, FP = 0, 0, 0, 0
+
   # 1 = P300 classification, 0 = Non-P300 classification
   for i, value in enumerate(y_pred.data.tolist()):
       if value[0] <= .5:
@@ -189,10 +213,10 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   precision = TP/(TP + FP) if (TP + FP) != 0 else 0
   recall = TP/(TP + FN) if (TP + FN) != 0 else 0
   f1_score = 2 * ((precision * recall) / (precision + recall)) if (precision + recall) != 0 else 0
-  print("\n-----------------\n  Scores:\n-----------------")
+  print("\n--------------\nTesting Scores:\n-----------------")
   print(f"Accuracy: {100 * accuracy:.2f}%")
   print(f"Precision: {100 * precision:.2f}%")
   print(f"Recall: {100 * recall:.2f}%")
   print(f"F1 Score: {100 * f1_score:.2f}%")
   print("-----------------")
-  return accuracy, loss_data, convergence_point, convergence_time, precision, recall, f1_score
+  return [f1_score_train, f1_score], loss_data, convergence_point, convergence_time, precision, recall, f1_score
