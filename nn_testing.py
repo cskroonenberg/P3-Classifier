@@ -1,6 +1,8 @@
 from nn_classifier import train_and_test
 from nn_plots import plot_loss
 from nn_trainvstest_plots import plot_trainvstest
+import time
+import json
 
 hidden1 = 500 # Number of neurons in first hidden layer
 hidden2 = 1000 # Number of neurons in second hidden layer
@@ -33,7 +35,7 @@ def trials(category, names, learning_list, layer_list, optimizers, n, split):
         print(f"---------------Test {i+1}---------------")
         print(f"          {category} - {names[i]}\n")
 
-        f1_data, loss_data, convergence_point, time = train_and_test(learning_list[i], layer_list[i][0], 
+        f1_data, loss_data, convergence_point, time, precision, recall, f1 = train_and_test(learning_list[i], layer_list[i][0], 
         layer_list[i][1], layer_list[i][2], layer_list[i][3], optim=optimizers[i], n=n[i], split=split[i])
         print(f'Elapsed time: {time:.2f} s\n\n\n')
         loss_collection.append(loss_data)
@@ -74,8 +76,8 @@ def tests(trial):
         plot_trainvstest(f1_data, names, "Optimization Algorithms")
     elif trial == 4:
         #Trial 4: Differing training iterations
-        names = ["100", "250", "500", "750", "1000"]
-        loss_size, convergence_size, f1_data = trials("Iterations", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [100, 250, 500, 750, 1000], [0.5] * len(names))
+        names = ["100", "250", "500", "750", "1000", "10,000"]
+        loss_size, convergence_size, f1_data = trials("Iterations", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [100, 250, 500, 750, 1000, 10000], [0.5] * len(names))
         plot_loss(loss_size, convergence_size, names, "Iterations")
         plot_trainvstest(f1_data, names, "# Training Iterations")
     elif trial == 5:
@@ -84,11 +86,47 @@ def tests(trial):
         loss_size, convergence_size, f1_data = trials("Train:Test Split", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [500] * len(names), [0.5, 0.3, 0.2, 0.1, 0.05])
         plot_loss(loss_size, convergence_size, names, "Train:Test Split")
         plot_trainvstest(f1_data, names, "Test/Train Split")
+    elif trial == 6:
+        # Trial 6: Find the best combination from the above trials
+        t = 0 # trial number
+        T_0 = time.time()
+        for lr in [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3]:
+            for size in [[500, 250, 50, output], [1000, 5000, 1000, 30],[1000, 500, 500, 5],[hidden1, hidden2, hidden3, output,1], [hidden1, hidden2, hidden3, output,10]]:
+                for o in ["adam", "sgd", "adamax", "rprop", "lbfgs"]:
+                    for n in [100, 250, 500, 750, 1000]:
+                        for s in [0.5, 0.3, 0.2]:
+                            t0 = time.time()
+                            accuracy, loss_data, convergence_point, precision, recall, f1 = train_and_test(lr, size[0], size[1], size[2], size[3], optim=o, n=n, split=s)
+                            t1 = time.time()
+                            log_entry = {"trial": t,
+                                "learning rate": lr,
+                                "size": size,
+                                "optimization": o,
+                                "training iterations": n,
+                                "test:train split": s,
+                                "accuracy": accuracy,
+                                "precision": precision,
+                                "recall": recall,
+                                "F1 score": f1,
+                                "elapsed time": round(t1-t0, ndigits=2)
+                                }
+                            with open('trials.json','r+') as file:
+                                # First we load existing data into a dict.
+                                file_data = json.load(file)
+                                # Join new_data with file_data inside emp_details
+                                file_data['trials'].append(log_entry)
+                                # Sets file's current position at offset.
+                                file.seek(0)
+                                # convert back to json.
+                                json.dump(file_data, file, indent = 4)
+                            t += 1
+        T_1 = time.time()
+        print(f'Elapsed time: {T_1-T_0:.2f} s\n\n\n')
     else:
         print('Invalid input.')
     
 def main():
-    t = int(input('Which trial would you like to test?\n0) Original Trial\n1) Learning Rate Changes\n2) Hidden Layer Size changes\n3) Optimization function changes\n4) Training iteration changes\n5) Train:Test split changes\n> '))
+    t = int(input('Which trial would you like to test?\n0) Original Trial\n1) Learning Rate Changes\n2) Hidden Layer Size changes\n3) Optimization function changes\n4) Training iteration changes\n5) Train:Test split changes\n6) Find Optimum combination of above modifiers\n> '))
     tests(t)
 
 main()
