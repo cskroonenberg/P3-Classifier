@@ -1,6 +1,7 @@
 from nn_classifier import train_and_test
 from nn_plots import plot_loss
 from nn_trainvstest_plots import plot_trainvstest
+from nn_trainvstest_lineplots import plotline_trainvstest
 import time
 import json
 
@@ -55,12 +56,14 @@ def tests(trial):
         loss, convergence, f1_data = trials("Original", ["original"], [1e-3], [default_layers], ["adam"], [500], [0.5])
         plot_loss(loss, convergence, ["original"], "Original")
         plot_trainvstest(f1_data, ["Original"], "Original")
+        plotline_trainvstest(f1_data, names, "# Original")
     elif trial == 1:
         #Trial 1: Learning rate changes (.1e-3 had best results)
         names = [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"]
         loss, convergence, f1_data = trials("Learning rate", names, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [default_layers] * len(names), ["adam"] * len(names), [500] * len(names), [0.5] * len(names))
         plot_loss(loss, convergence, names, "learning rate")
         plot_trainvstest(f1_data, names, "Learning Rate")
+        plotline_trainvstest(f1_data, names, "Learning Rate")
     elif trial == 2:
         #Trial 2: NN size change #Could run this over several iterations
         names = ["Small", "Large", "Medium", "Long", "15 layer"]
