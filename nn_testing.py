@@ -32,18 +32,20 @@ def trials(category, names, learning_list, layer_list, optimizers, n, split):
     loss_collection = []
     f1_collection = []
     convergence_collection = []
+    confusion_collection = []
     for i in range(trials):
         print(f"---------------Test {i+1}---------------")
         print(f"          {category} - {names[i]}\n")
 
-        f1_data, loss_data, convergence_point, time, precision, recall, f1 = train_and_test(learning_list[i], layer_list[i][0], 
+        f1_data, confusion_results, loss_data, convergence_point, time, precision, recall, f1 = train_and_test(learning_list[i], layer_list[i][0], 
         layer_list[i][1], layer_list[i][2], layer_list[i][3], optim=optimizers[i], n=n[i], split=split[i])
         print(f'Elapsed time: {time:.2f} s\n\n\n')
         loss_collection.append(loss_data)
         f1_collection.append(f1_data)
         convergence_collection.append(convergence_point)
+        confusion_collection.append(confusion_results)
 
-    return loss_collection, convergence_collection, f1_collection
+    return loss_collection, convergence_collection, f1_collection, confusion_collection
 
 def tests(trial):
     """

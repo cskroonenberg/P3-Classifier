@@ -192,7 +192,7 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   print(f"Recall: {100 * recall:.2f}%")
   print(f"F1 Score: {100 * f1_score_train:.2f}%")
   print("-----------------")
-
+  training_results = [TP, TN, FP, FN]
   # Predict labels for test dataset
   y_pred = model(X_testTensor1)
 
@@ -219,4 +219,6 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   print(f"Recall: {100 * recall:.2f}%")
   print(f"F1 Score: {100 * f1_score:.2f}%")
   print("-----------------")
-  return [f1_score_train, f1_score], loss_data, convergence_point, convergence_time, precision, recall, f1_score
+  testing_results = [TP, TN, FP, FN]
+  confusion_results = [training_results, testing_results]
+  return [f1_score_train, f1_score], confusion_results, loss_data, convergence_point, convergence_time, precision, recall, f1_score
