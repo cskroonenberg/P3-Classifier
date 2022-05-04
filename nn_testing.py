@@ -2,6 +2,7 @@ from nn_classifier import train_and_test
 from nn_plots import plot_loss
 from nn_trainvstest_plots import plot_trainvstest
 from nn_trainvstest_lineplots import plotline_trainvstest
+from nn_plotconfusion import plot_confusionmtrx
 import time
 import json
 
@@ -55,40 +56,46 @@ def tests(trial):
 
     if trial == 0:
         #Original trial
-        loss, convergence, f1_data = trials("Original", ["original"], [1e-3], [default_layers], ["adam"], [500], [0.5])
+        loss, convergence, f1_data, confusion = trials("Original", ["original"], [1e-3], [default_layers], ["adam"], [500], [0.5])
         plot_loss(loss, convergence, ["original"], "Original")
         plot_trainvstest(f1_data, ["Original"], "Original")
-        plotline_trainvstest(f1_data, names, "# Original")
+        plot_confusionmtrx(confusion, ["Original"], "Original")
+
     elif trial == 1:
         #Trial 1: Learning rate changes (.1e-3 had best results)
         names = [".1e-3", "1e-3", "2e-3", "3e-3","5e-3"]
-        loss, convergence, f1_data = trials("Learning rate", names, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [default_layers] * len(names), ["adam"] * len(names), [500] * len(names), [0.5] * len(names))
+        loss, convergence, f1_data, confusion = trials("Learning rate", names, [.1e-3, 1e-3, 2e-3, 3e-3, 5e-3], [default_layers] * len(names), ["adam"] * len(names), [500] * len(names), [0.5] * len(names))
         plot_loss(loss, convergence, names, "learning rate")
         plot_trainvstest(f1_data, names, "Learning Rate")
         plotline_trainvstest(f1_data, names, "Learning Rate")
+        plot_confusionmtrx(confusion, names, "Learning Rate")
     elif trial == 2:
         #Trial 2: NN size change #Could run this over several iterations
         names = ["Small", "Large", "Medium", "Long", "15 layer"]
-        loss_size, convergence_size, f1_data = trials("Size", names, [.1e-3] * len(names), [[500, 250, 50, output], 
+        loss_size, convergence_size, f1_data, confusion = trials("Size", names, [.1e-3] * len(names), [[500, 250, 50, output], 
         [1000, 5000, 1000, 30],[1000, 500, 500, 5],[hidden1, hidden2, hidden3, output,1], [hidden1, hidden2, hidden3, output,10]], ["adam"] * len(names), [500] * len(names), [0.5] * len(names)) 
         plot_loss(loss_size, convergence_size, names, "NN Size")
         plot_trainvstest(f1_data, names, "NN Size")
+        plotline_trainvstest(f1_data, names, "NN Size")
+        plot_confusionmtrx(confusion, names, "NN Size")
     elif trial == 3:
         #Trial 3: Differing Optimization functions : #3 tests
         names = ["LBFGS", "SGD", "Adam", "Adamax", "RProp"]
-        loss_size, convergence_size, f1_data = trials("Optimizer", names, [.1e-3] * len(names), [default_layers] * len(names), ["lbfgs", "sgd", "adam", "adamax", "rprop"], [300] * len(names), [0.5] * len(names)) #lgbfs needs closure 
+        loss_size, convergence_size, f1_data, confusion = trials("Optimizer", names, [.1e-3] * len(names), [default_layers] * len(names), ["lbfgs", "sgd", "adam", "adamax", "rprop"], [300] * len(names), [0.5] * len(names)) #lgbfs needs closure 
         plot_loss(loss_size, convergence_size, names, "Optim")
         plot_trainvstest(f1_data, names, "Optimization Algorithms")
+        plotline_trainvstest(f1_data, names, "Optimization Algorithms")
+        plot_confusionmtrx(confusion, names, "Optimization Algorithms")
     elif trial == 4:
         #Trial 4: Differing training iterations
         names = ["100", "250", "500", "750", "1000", "10,000"]
-        loss_size, convergence_size, f1_data = trials("Iterations", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [100, 250, 500, 750, 1000, 10000], [0.5] * len(names))
+        loss_size, convergence_size, f1_data, confusion = trials("Iterations", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [100, 250, 500, 750, 1000, 10000], [0.5] * len(names))
         plot_loss(loss_size, convergence_size, names, "Iterations")
         plot_trainvstest(f1_data, names, "# Training Iterations")
     elif trial == 5:
         #Trial 5: Differing train:test splits
         names = ["50:50", "70:30", "80:20", "90:10", "95:5"]
-        loss_size, convergence_size, f1_data = trials("Train:Test Split", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [500] * len(names), [0.5, 0.3, 0.2, 0.1, 0.05])
+        loss_size, convergence_size, f1_data, confusion = trials("Train:Test Split", names, [.1e-3] * len(names), [default_layers] * len(names), ["adam"] * len(names), [500] * len(names), [0.5, 0.3, 0.2, 0.1, 0.05])
         plot_loss(loss_size, convergence_size, names, "Train:Test Split")
         plot_trainvstest(f1_data, names, "Test/Train Split")
     elif trial == 6:

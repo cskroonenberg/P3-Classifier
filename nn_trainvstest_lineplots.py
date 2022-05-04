@@ -8,7 +8,7 @@ def plotline_trainvstest(f1_collection, labels, title):
     :param title: Name of the trial as str
     @return: N/A
     """
-    xpos = list(range(0, (len(f1_collection) + 1)))
+    xpos = list(range(0, (len(f1_collection))))
     training_scores = [item[0] for item in f1_collection]
     testing_scores = [item[1] for item in f1_collection]
     plt.plot(training_scores, label="Training")

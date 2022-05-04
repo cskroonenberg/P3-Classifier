@@ -198,15 +198,25 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
 
   # compare prediction to actual
   TP, TN, FN, FP = 0, 0, 0, 0
-
+  test_pred, y_test = [], []
   # 1 = P300 classification, 0 = Non-P300 classification
   for i, value in enumerate(y_pred.data.tolist()):
       if value[0] <= .5:
-        if y_testTensor1[i] == 0: TN+=1
-        else: FN+=1
+        test_pred.append(0)
+        if y_testTensor1[i] == 0: 
+          y_test.append(0)
+          TN+=1
+        else: 
+          y_test.append(1)
+          FN+=1
       if value[0] > .5:
-        if y_testTensor1[i] == 1: TP+=1
-        else: FP+=1
+        test_pred.append(1)
+        if y_testTensor1[i] == 1: 
+          y_test.append(1)
+          TP+=1
+        else: 
+          y_test.append(0)
+          FP+=1
 
   # calculate accuracy
   accuracy = (TP + TN)/(TP + TN + FP + FN)
@@ -219,6 +229,6 @@ def train_and_test(learning_rate, hidden1, hidden2, hidden3, output, extra_layer
   print(f"Recall: {100 * recall:.2f}%")
   print(f"F1 Score: {100 * f1_score:.2f}%")
   print("-----------------")
-  testing_results = [TP, TN, FP, FN]
-  confusion_results = [training_results, testing_results]
+
+  confusion_results = [test_pred, y_test]
   return [f1_score_train, f1_score], confusion_results, loss_data, convergence_point, convergence_time, precision, recall, f1_score
